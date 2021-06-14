@@ -1,7 +1,13 @@
 import { startOfWeek, sub } from 'date-fns';
-import { off } from 'node:process';
 import { StatusReturn, Timetable } from './types';
 import { UntisAPI } from './untis-api';
+
+const envKeys = ["SCHOOL_NAME", "USERNAME", "PASSWORD"];
+envKeys.forEach((key) => {
+    if(!process.env[key]) {
+        throw new Error(`"${key}" is not defined in the environemnt. Have you create a .env?`)
+    }
+})
 
 const untisAPI = new UntisAPI({
     school: process.env.SCHOOL_NAME!,
@@ -90,7 +96,8 @@ function nWeeksAgo(weeks: number) {
 
 async function run() {
     const timeTableId = 4138;
-    const date = nWeeksAgo(0);
+    const weeksAgoArg = parseInt(process.argv[2])
+    const date = nWeeksAgo(weeksAgoArg || 0);
 
     const { ok: authOk, error: authError } = await untisAPI.authorize();
     if (!authOk) {
@@ -114,6 +121,7 @@ async function run() {
     if (!reportOk || report === undefined) {
         throw new Error('Could not create report: ' + reportError);
     }
+
     console.log(report);
 }
 
