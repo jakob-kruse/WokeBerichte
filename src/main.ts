@@ -107,6 +107,8 @@ async function run() {
 
     let weeksAgoArg = parseInt(process.argv[2])
 
+    const auto = process.argv.includes('--auto')
+    
     while (weeksAgoArg > -1) {
         const date = nWeeksAgo(weeksAgoArg || 0);
 
@@ -137,13 +139,15 @@ ${report}
 `
         )
         weeksAgoArg--
-        if(weeksAgoArg < 0) {
+        if (weeksAgoArg < 0) {
             break;
         }
 
-        const answer = prompt(`Show next week? [Y/n]`)
-        if (answer === "n") {
-            break;
+        if (!auto) {
+            const answer = prompt(`Show next week? [Y/n]`)
+            if (answer === "n") {
+                break;
+            }
         }
     }
 }
