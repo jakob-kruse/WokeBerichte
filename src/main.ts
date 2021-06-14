@@ -1,10 +1,13 @@
 import { startOfWeek, sub } from 'date-fns';
 import { StatusReturn, Timetable } from './types';
 import { UntisAPI } from './untis-api';
+import PromptSync from 'prompt-sync';
+
+const prompt = PromptSync({ sigint: true });
 
 const envKeys = ["SCHOOL_NAME", "USERNAME", "PASSWORD"];
 envKeys.forEach((key) => {
-    if(!process.env[key]) {
+    if (!process.env[key]) {
         throw new Error(`"${key}" is not defined in the environemnt. Have you create a .env?`)
     }
 })
@@ -17,7 +20,7 @@ const untisAPI = new UntisAPI({
 
 export async function weeklyReport(
     timetable: Timetable,
-    subjectSpacing: string = '\n',
+    subjectSpacing: string = '',
 ): Promise<StatusReturn<string>> {
     const teachingContents: { [key: string]: string[] } = {};
 
@@ -67,6 +70,7 @@ export async function weeklyReport(
     }
 
     const resultString: string[] = [];
+
     Object.entries(teachingContents).forEach(([subject, contents]) => {
         if (contents.length > 0) {
             resultString.push(subject);
@@ -96,33 +100,52 @@ function nWeeksAgo(weeks: number) {
 
 async function run() {
     const timeTableId = 4138;
-    const weeksAgoArg = parseInt(process.argv[2])
-    const date = nWeeksAgo(weeksAgoArg || 0);
-
     const { ok: authOk, error: authError } = await untisAPI.authorize();
     if (!authOk) {
         throw new Error(authError);
     }
 
-    const {
-        ok: timeTableDataOk,
-        data: timeTable,
-        error: timeTableError,
-    } = await untisAPI.getTimetable(timeTableId, untisAPI.toUntisDate(date));
-    if (!timeTableDataOk || !timeTable) {
-        throw new Error('Could not get Timetable: ' + timeTableError);
-    }
+    let weeksAgoArg = parseInt(process.argv[2])
 
-    const {
-        ok: reportOk,
-        data: report,
-        error: reportError,
-    } = await weeklyReport(timeTable);
-    if (!reportOk || report === undefined) {
-        throw new Error('Could not create report: ' + reportError);
-    }
+    while (weeksAgoArg > -1) {
+        const date = nWeeksAgo(weeksAgoArg || 0);
 
-    console.log(report);
+        const {
+            ok: timeTableDataOk,
+            data: timeTable,
+            error: timeTableError,
+        } = await untisAPI.getTimetable(timeTableId, untisAPI.toUntisDate(date));
+        if (!timeTableDataOk || !timeTable) {
+            throw new Error('Could not get Timetable: ' + timeTableError);
+        }
+
+        const {
+            ok: reportOk,
+            data: report,
+            error: reportError,
+        } = await weeklyReport(timeTable);
+        if (!reportOk || report === undefined) {
+            throw new Error('Could not create report: ' + reportError);
+        }
+
+        console.log(
+            `
+${weeksAgoArg} weeks ago [${date.toUTCString()}]
+
+${report}
+
+`
+        )
+        weeksAgoArg--
+        if(weeksAgoArg < 0) {
+            break;
+        }
+
+        const answer = prompt(`Show next week? [Y/n]`)
+        if (answer === "n") {
+            break;
+        }
+    }
 }
 
 run();

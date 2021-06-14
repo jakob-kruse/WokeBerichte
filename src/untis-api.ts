@@ -161,7 +161,7 @@ export class UntisAPI {
         } catch (error) {
             return { ok: false, error: error.message };
         }
-
+        
         const {
             error: responseError,
             result: { data: responseData },

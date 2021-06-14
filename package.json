@@ -14,11 +14,13 @@
     "date-fns": "^2.20.1",
     "dotenv": "^8.2.0",
     "form-data": "^4.0.0",
+    "prompt-sync": "^4.2.0",
     "ts-node": "^10.0.0",
     "typescript": "^4.3.2"
   },
   "devDependencies": {
     "@types/cookie": "^0.4.0",
-    "@types/node": "^14.14.37"
+    "@types/node": "^14.14.37",
+    "@types/prompt-sync": "^4.1.0"
   }
 }
