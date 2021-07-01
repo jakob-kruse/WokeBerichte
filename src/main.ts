@@ -8,7 +8,7 @@ const prompt = PromptSync({ sigint: true });
 const envKeys = ["SCHOOL_NAME", "USERNAME", "PASSWORD"];
 envKeys.forEach((key) => {
     if (!process.env[key]) {
-        throw new Error(`"${key}" is not defined in the environemnt. Have you create a .env?`)
+        throw new Error(`"${key}" is not defined in the environemnt. Have you created a .env?`)
     }
 })
 
