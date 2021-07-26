@@ -18,6 +18,7 @@ const untisAPI = new UntisAPI({
     password: process.env.UNTIS_PASSWORD!,
 });
 
+
 export async function weeklyReport(
     timetable: Timetable,
     subjectSpacing: string = '',
@@ -48,7 +49,11 @@ export async function weeklyReport(
                 error: `Failed fetching period detail: ${periodDetailsError}`,
             };
         }
-
+        
+        if(periodDetails.status !== 'NORMAL_TEACHING_PERIOD') {
+            continue;
+        }
+        
         const subjectName = periodDetails.subject.shortName;
         const teachingContentEntries = teachingContents[subjectName];
 
