@@ -5,7 +5,7 @@ import PromptSync from 'prompt-sync';
 
 const prompt = PromptSync({ sigint: true });
 
-const envKeys = ["SCHOOL_NAME", "USERNAME", "PASSWORD"];
+const envKeys = ["UNTIS_SCHOOL_NAME", "UNTIS_USERNAME", "UNTIS_PASSWORD"];
 envKeys.forEach((key) => {
     if (!process.env[key]) {
         throw new Error(`"${key}" is not defined in the environemnt. Have you created a .env?`)
@@ -13,9 +13,9 @@ envKeys.forEach((key) => {
 })
 
 const untisAPI = new UntisAPI({
-    school: process.env.SCHOOL_NAME!,
-    username: process.env.USERNAME!,
-    password: process.env.PASSWORD!,
+    school: process.env.UNTIS_SCHOOL_NAME!,
+    username: process.env.UNTIS_USERNAME!,
+    password: process.env.UNTIS_PASSWORD!,
 });
 
 export async function weeklyReport(
