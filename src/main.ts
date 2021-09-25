@@ -2,6 +2,7 @@ import { startOfWeek, sub } from 'date-fns';
 import { StatusReturn, Timetable } from './types';
 import { UntisAPI } from './untis-api';
 import PromptSync from 'prompt-sync';
+import * as fs from 'fs';
 
 const prompt = PromptSync({ sigint: true });
 
@@ -18,6 +19,7 @@ const untisAPI = new UntisAPI({
     password: process.env.UNTIS_PASSWORD!,
 });
 
+let retVal = '';
 
 export async function weeklyReport(
     timetable: Timetable,
@@ -49,16 +51,17 @@ export async function weeklyReport(
                 error: `Failed fetching period detail: ${periodDetailsError}`,
             };
         }
-        
-        if(periodDetails.status !== 'NORMAL_TEACHING_PERIOD') {
+
+        if(periodDetails.type !== 'NORMAL_TEACHING_PERIOD') {
             continue;
         }
-        
+
         const subjectName = periodDetails.subject.shortName;
         const teachingContentEntries = teachingContents[subjectName];
 
         const teachingContent =
             periodDetails.teachingContent?.split('\n') ?? [];
+
         if (!teachingContentEntries) {
             teachingContents[subjectName] = [...teachingContent];
         } else {
@@ -104,7 +107,7 @@ function nWeeksAgo(weeks: number) {
 }
 
 async function run() {
-    const timeTableId = 4138;
+    const timeTableId = 4143; //ToDo: Change to your own id
     const { ok: authOk, error: authError } = await untisAPI.authorize();
     if (!authOk) {
         throw new Error(authError);
@@ -112,8 +115,8 @@ async function run() {
 
     let weeksAgoArg = parseInt(process.argv[2])
 
-    const auto = process.argv.includes('--auto')
-    
+    const auto = true
+
     while (weeksAgoArg > -1) {
         const date = nWeeksAgo(weeksAgoArg || 0);
 
@@ -135,6 +138,7 @@ async function run() {
             throw new Error('Could not create report: ' + reportError);
         }
 
+        retVal += `${date.toUTCString()}\n\n${report}\n\n\n\n\n\n`;
         console.log(
             `
 ${weeksAgoArg} weeks ago [${date.toUTCString()}]
@@ -155,6 +159,8 @@ ${report}
             }
         }
     }
+
+    fs.writeFile('report.txt', retVal, (val) => console.log(val));
 }
 
 run();

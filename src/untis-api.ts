@@ -109,6 +109,7 @@ export class UntisAPI {
                 requestData,
             );
         } catch (error) {
+            // @ts-ignore
             return { ok: false, error: error.message };
         }
 
@@ -159,9 +160,10 @@ export class UntisAPI {
                 `/WebUntis/api/public/timetable/weekly/data?${query}`,
             );
         } catch (error) {
+            // @ts-ignore
             return { ok: false, error: error.message };
         }
-        
+
         const {
             error: responseError,
             result: { data: responseData },
