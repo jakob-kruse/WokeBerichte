@@ -31,10 +31,10 @@ A description how to get the id will be added soon™, at the same time the id w
 ## Run
 
 ```shell
-npm run start -- <weeks-ago> [--auto]
+npm run start -- <weeks-ago>
 ```
 
-Note: `--auto` will not ask you to confirm after every week and will just continue
+Note: `--auto` has been removed. Every week will be requested and parsed, you'll see some output in the console, at the end the output you've seen will be written into `reports.txt` (will be created if it doesn't exist).
 
 # Example
 
