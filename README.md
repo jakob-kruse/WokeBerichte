@@ -37,7 +37,7 @@ Hint: The request url will probably be displayed as `data?` followed by the para
 ## Run
 
 ```shell
-npm run start -- <weeks-ago>
+npm run start <weeks-ago>
 ```
 
 Note: `--auto` has been removed. Every week will be requested and parsed, you'll see some output in the console, at the end the output you've seen will be written into `reports.txt` (will be created if it doesn't exist).
