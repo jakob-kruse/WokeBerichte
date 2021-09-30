@@ -25,7 +25,14 @@ touch .env
 See .env.example for the environment variables
 
 ## TimetableId
-A description how to get the id will be added soon™.
+1. Go to [webuntis](https://asopo.webuntis.com/WebUntis/#/basic/login)
+2. Select your school and log in
+3. Open the console (`F12`) and select `network`
+4. Select `My Scedule` in webuntis
+5. Search the `GET`-Request with the url `https://asopo.webuntis.com/WebUntis/api/public/timetable/weekly/data` and the following parameters `elementType`, `elementId`, `date` and `formatId`
+6. The value of `elementId` is your timetableId
+
+Hint: The request url will probably be displayed as `data?` followed by the parameters.
 
 ## Run
 
