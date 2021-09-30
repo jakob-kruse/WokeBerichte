@@ -1,12 +1,12 @@
-import { startOfWeek, sub } from 'date-fns';
-import { StatusReturn, Timetable } from './types';
-import { UntisAPI } from './untis-api';
+import {startOfWeek, sub} from 'date-fns';
+import {StatusReturn, Timetable} from './types';
+import {UntisAPI} from './untis-api';
 import PromptSync from 'prompt-sync';
 import * as fs from 'fs';
 
-const prompt = PromptSync({ sigint: true });
+const prompt = PromptSync({sigint: true});
 
-const envKeys = ["UNTIS_SCHOOL_NAME", "UNTIS_USERNAME", "UNTIS_PASSWORD"];
+const envKeys = ["UNTIS_SCHOOL_NAME", "UNTIS_USERNAME", "UNTIS_PASSWORD", "UNTIS_TIME_TABLE_ID"];
 envKeys.forEach((key) => {
     if (!process.env[key]) {
         throw new Error(`"${key}" is not defined in the environemnt. Have you created a .env?`)
@@ -52,7 +52,7 @@ export async function weeklyReport(
             };
         }
 
-        if(periodDetails.type !== 'NORMAL_TEACHING_PERIOD') {
+        if (periodDetails.type !== 'NORMAL_TEACHING_PERIOD') {
             continue;
         }
 
@@ -103,12 +103,12 @@ export async function weeklyReport(
 }
 
 function nWeeksAgo(weeks: number) {
-    return sub(startOfWeek(new Date(), { weekStartsOn: 2 }), { weeks });
+    return sub(startOfWeek(new Date(), {weekStartsOn: 2}), {weeks});
 }
 
 async function run() {
-    const timeTableId = 4143; //ToDo: Change to your own id
-    const { ok: authOk, error: authError } = await untisAPI.authorize();
+    const timeTableId = parseInt(process.env.UNTIS_TIME_TABLE_ID!, 10);
+    const {ok: authOk, error: authError} = await untisAPI.authorize();
     if (!authOk) {
         throw new Error(authError);
     }
