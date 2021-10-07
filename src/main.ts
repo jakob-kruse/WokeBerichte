@@ -1,11 +1,12 @@
-import { startOfWeek, sub } from 'date-fns';
-import { StatusReturn, Timetable } from './types';
-import { UntisAPI } from './untis-api';
+import {startOfWeek, sub} from 'date-fns';
+import {StatusReturn, Timetable} from './types';
+import {UntisAPI} from './untis-api';
 import PromptSync from 'prompt-sync';
+import * as fs from 'fs';
 
-const prompt = PromptSync({ sigint: true });
+const prompt = PromptSync({sigint: true});
 
-const envKeys = ["UNTIS_SCHOOL_NAME", "UNTIS_USERNAME", "UNTIS_PASSWORD"];
+const envKeys = ["UNTIS_SCHOOL_NAME", "UNTIS_USERNAME", "UNTIS_PASSWORD", "UNTIS_TIME_TABLE_ID"];
 envKeys.forEach((key) => {
     if (!process.env[key]) {
         throw new Error(`"${key}" is not defined in the environemnt. Have you created a .env?`)
@@ -18,6 +19,7 @@ const untisAPI = new UntisAPI({
     password: process.env.UNTIS_PASSWORD!,
 });
 
+let retVal = '';
 
 export async function weeklyReport(
     timetable: Timetable,
@@ -49,16 +51,17 @@ export async function weeklyReport(
                 error: `Failed fetching period detail: ${periodDetailsError}`,
             };
         }
-        
-        if(periodDetails.status !== 'NORMAL_TEACHING_PERIOD') {
+
+        if (periodDetails.type !== 'NORMAL_TEACHING_PERIOD') {
             continue;
         }
-        
+
         const subjectName = periodDetails.subject.shortName;
         const teachingContentEntries = teachingContents[subjectName];
 
         const teachingContent =
             periodDetails.teachingContent?.split('\n') ?? [];
+
         if (!teachingContentEntries) {
             teachingContents[subjectName] = [...teachingContent];
         } else {
@@ -100,20 +103,20 @@ export async function weeklyReport(
 }
 
 function nWeeksAgo(weeks: number) {
-    return sub(startOfWeek(new Date(), { weekStartsOn: 2 }), { weeks });
+    return sub(startOfWeek(new Date(), {weekStartsOn: 2}), {weeks});
 }
 
 async function run() {
-    const timeTableId = 4138;
-    const { ok: authOk, error: authError } = await untisAPI.authorize();
+    const timeTableId = parseInt(process.env.UNTIS_TIME_TABLE_ID!, 10);
+    const {ok: authOk, error: authError} = await untisAPI.authorize();
     if (!authOk) {
         throw new Error(authError);
     }
 
     let weeksAgoArg = parseInt(process.argv[2])
 
-    const auto = process.argv.includes('--auto')
-    
+    const auto = true
+
     while (weeksAgoArg > -1) {
         const date = nWeeksAgo(weeksAgoArg || 0);
 
@@ -135,6 +138,7 @@ async function run() {
             throw new Error('Could not create report: ' + reportError);
         }
 
+        retVal += `${date.toUTCString()}\n\n${report}\n\n\n\n\n\n`;
         console.log(
             `
 ${weeksAgoArg} weeks ago [${date.toUTCString()}]
@@ -155,6 +159,8 @@ ${report}
             }
         }
     }
+
+    fs.writeFile('report.txt', retVal, (val) => console.log(val));
 }
 
 run();
