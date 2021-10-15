@@ -1,17 +1,24 @@
-import {startOfWeek, sub} from 'date-fns';
-import {StatusReturn, Timetable} from './types';
-import {UntisAPI} from './untis-api';
+import { startOfWeek, sub } from 'date-fns';
+import { StatusReturn, Timetable } from './types';
+import { UntisAPI } from './untis-api';
 import PromptSync from 'prompt-sync';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 
-const prompt = PromptSync({sigint: true});
+const prompt = PromptSync({ sigint: true });
 
-const envKeys = ["UNTIS_SCHOOL_NAME", "UNTIS_USERNAME", "UNTIS_PASSWORD", "UNTIS_TIME_TABLE_ID"];
+const envKeys = [
+    'UNTIS_SCHOOL_NAME',
+    'UNTIS_USERNAME',
+    'UNTIS_PASSWORD',
+    'UNTIS_TIME_TABLE_ID',
+];
 envKeys.forEach((key) => {
     if (!process.env[key]) {
-        throw new Error(`"${key}" is not defined in the environemnt. Have you created a .env?`)
+        throw new Error(
+            `"${key}" is not defined in the environemnt. Have you created a .env?`,
+        );
     }
-})
+});
 
 const untisAPI = new UntisAPI({
     school: process.env.UNTIS_SCHOOL_NAME!,
@@ -103,19 +110,22 @@ export async function weeklyReport(
 }
 
 function nWeeksAgo(weeks: number) {
-    return sub(startOfWeek(new Date(), {weekStartsOn: 2}), {weeks});
+    return sub(startOfWeek(new Date(), { weekStartsOn: 2 }), { weeks });
 }
 
 async function run() {
     const timeTableId = parseInt(process.env.UNTIS_TIME_TABLE_ID!, 10);
-    const {ok: authOk, error: authError} = await untisAPI.authorize();
+    const { ok: authOk, error: authError } = await untisAPI.authorize();
+
     if (!authOk) {
         throw new Error(authError);
     }
 
-    let weeksAgoArg = parseInt(process.argv[2])
+    let weeksAgoArg = parseInt(process.argv[2]);
 
-    const auto = true
+    if (!weeksAgoArg) {
+        weeksAgoArg = 1;
+    }
 
     while (weeksAgoArg > -1) {
         const date = nWeeksAgo(weeksAgoArg || 0);
@@ -124,7 +134,11 @@ async function run() {
             ok: timeTableDataOk,
             data: timeTable,
             error: timeTableError,
-        } = await untisAPI.getTimetable(timeTableId, untisAPI.toUntisDate(date));
+        } = await untisAPI.getTimetable(
+            timeTableId,
+            untisAPI.toUntisDate(date),
+        );
+
         if (!timeTableDataOk || !timeTable) {
             throw new Error('Could not get Timetable: ' + timeTableError);
         }
@@ -145,22 +159,21 @@ ${weeksAgoArg} weeks ago [${date.toUTCString()}]
 
 ${report}
 
-`
-        )
-        weeksAgoArg--
+`,
+        );
+
+        weeksAgoArg--;
+
         if (weeksAgoArg < 0) {
             break;
         }
-
-        if (!auto) {
-            const answer = prompt(`Show next week? [Y/n]`)
-            if (answer === "n") {
-                break;
-            }
-        }
     }
 
-    fs.writeFile('report.txt', retVal, (val) => console.log(val));
+    try {
+        fs.writeFile('report.txt', retVal);
+    } catch (error) {
+        console.error('Failed to write report', error);
+    }
 }
 
 run();

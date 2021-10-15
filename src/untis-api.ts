@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import querystring from 'querystring';
@@ -146,7 +146,7 @@ export class UntisAPI {
     async getTimetable(
         timeTableId: number,
         date: ParsableDate,
-    ): Promise<StatusReturn<Timetable>> {
+    ): Promise<StatusReturn<Timetable, string>> {
         const query = querystring.stringify({
             elementType: 5,
             elementId: timeTableId,
@@ -160,8 +160,7 @@ export class UntisAPI {
                 `/WebUntis/api/public/timetable/weekly/data?${query}`,
             );
         } catch (error) {
-            // @ts-ignore
-            return { ok: false, error: error.message };
+            return { ok: false, error: (error as AxiosError).message };
         }
 
         const {
