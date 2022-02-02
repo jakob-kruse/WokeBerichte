@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import querystring from 'querystring';
+import { logDebug } from './util';
 import {
     TimetablePeriod,
     StatusReturn,
@@ -109,11 +110,17 @@ export class UntisAPI {
                 requestData,
             );
         } catch (error) {
+            logDebug(`Could not authorize: ${error}`);
             // @ts-ignore
             return { ok: false, error: error.message };
         }
 
         if (sessionResponse.data.state !== 'SUCCESS') {
+            logDebug(
+                `Error: Session Response: ${JSON.stringify(
+                    sessionResponse.data,
+                )}`,
+            );
             return {
                 ok: false,
                 error: 'Invalid credentials',

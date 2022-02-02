@@ -1,10 +1,7 @@
 import { startOfWeek, sub } from 'date-fns';
 import { StatusReturn, Timetable } from './types';
 import { UntisAPI } from './untis-api';
-import PromptSync from 'prompt-sync';
 import { promises as fs } from 'fs';
-
-const prompt = PromptSync({ sigint: true });
 
 const envKeys = [
     'UNTIS_SCHOOL_NAME',
@@ -12,6 +9,7 @@ const envKeys = [
     'UNTIS_PASSWORD',
     'UNTIS_TIME_TABLE_ID',
 ];
+
 envKeys.forEach((key) => {
     if (!process.env[key]) {
         throw new Error(
